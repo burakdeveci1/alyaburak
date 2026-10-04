@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alya & Burak - Özel Sayfa</title>
+    <!-- Google Fonts & Canvas Confetti -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #ffe6e9 0%, #ffe3ec 50%, #fbcfe8 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            color: #4a4a4a;
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 3rem;
+            color: #e11d48;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        p.sub-title {
+            font-size: 1.1rem;
+            color: #be123c;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        /* YouTube Gizli Oynatıcı */
+        #yt-player-container {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Müzik Butonu */
+        .music-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #fda4af;
+            border-radius: 50px;
+            padding: 10px 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(225, 29, 72, 0.2);
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #e11d48;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .music-btn:hover {
+            transform: scale(1.05);
+            background: #ffffff;
+        }
+
+        /* Yapboz Alanı */
+        .game-container {
+            background: rgba(255, 255, 255, 0.85);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 90vw;
+            z-index: 10;
+        }
+
+        #puzzle-board {
+            width: 300px;
+            height: 300px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2px;
+            border: 4px solid #fda4af;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .puzzle-piece {
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.5);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            background-repeat: no-repeat;
+            background-size: 300px 300px;
+        }
+
+        .puzzle-piece:hover {
+            filter: brightness(1.05);
+        }
+
+        .puzzle-piece.selected {
+            border: 3px solid #e11d48;
+            transform: scale(0.95);
+        }
+
+        /* Bana Tıkla Ekranı (Modal) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 25px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            animation: popup 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 80%;
+        }
+
+        @keyframes popup {
+            from { transform: scale(0.5); }
+            to { transform: scale(1); }
+        }
+
+        .click-btn {
+            background: linear-gradient(45deg, #ff4b2b, #ff416c);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: 'Dancing Script', cursive;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(255, 65, 108, 0.4);
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            animation: pulse 1.5s infinite;
+        }
+
+        .click-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 25px rgba(255, 65, 108, 0.6);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Balon Sahnesi */
+        #balloon-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 500;
+        }
+
+        .balloon {
+            position: absolute;
+            bottom: -100px;
+            width: 60px;
+            height: 75px;
+            border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            pointer-events: auto;
+            cursor: pointer;
+            animation: floatUp 8s linear infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset -5px -5px 10px rgba(0,0,0,0.1);
+        }
+
+        .balloon::after {
+            content: "";
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 15px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-110vh) rotate(20deg);
+                opacity: 0.9;
+            }
+        }
+
+        /* Mesaj Kutusu */
+        .toast-message {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #e11d48;
+            color: #be123c;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 1.3rem;
+            font-family: 'Dancing Script', cursive;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .toast-message.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Müzik Kontrolü -->
+    <button class="music-btn" id="musicToggle">
+        🎵 Müziği Başlat
+    </button>
+    <div id="yt-player-container">
+        <div id="player"></div>
+    </div>
+
+    <!-- Yapboz Alanı -->
+    <div class="game-container">
+        <h1>Alya & Burak</h1>
+        <p class="sub-title">Fotoğrafımızı tamamlamak için parçalara tıkla!</p>
+        <div id="puzzle-board"></div>
+    </div>
+
+    <!-- Yapboz Bittiğinde Açılan Modal -->
+    <div class="modal" id="winModal">
+        <div class="modal-content">
+            <h2 style="font-family: 'Dancing Script', cursive; font-size: 2.5rem; color: #e11d48; margin-bottom: 10px;">
+                Harika İş Çıkardın Sevgilim! ❤️
+            </h2>
+            <p style="color: #666; font-size: 1rem;">Seni bekleyen sürpriz için aşağıdaki butona tıkla...</p>
+            <button class="click-btn" id="startBalloonsBtn">Bana Tıkla ❤️</button>
+        </div>
+    </div>
+
+    <!-- Uçan Balonlar Container -->
+    <div id="balloon-container"></div>
+
+    <!-- Açılan Mesaj Kutusu -->
+    <div class="toast-message" id="toastMsg"></div>
+
+    <!-- YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        /***********************************************************
+         * 1. AYARLAR
+         ***********************************************************/
+        // Görsel adı 'ayla.png' olarak ayarlandı
+        const RESIM_URL = "ayla.png"; 
+        
+        // YouTube video ID'si
+        const YOUTUBE_VIDEO_ID = "nfQEVrwJ-U0"; 
+
+        // Balonlara tıklandığında çıkacak sözler
+        const SOZLER = [
+            "Burak seni çok seviyor! ❤️",
+            "İyi ki hayatımdasın Alya'm! ✨",
+            "Gülüşün dünyalara bedel... 😊",
+            "Birlikte bir ömre... 💍",
+            "Sen benim en güzel hikayemsin 📖",
+            "Her anım seninle güzel 💕",
+            "Sonsuza kadar biz! ♾️",
+            "Dünyanın en tatlı insanı 🥰"
+        ];
+
+        /***********************************************************
+         * 2. YOUTUBE MÜZİK ÇALAR
+         ***********************************************************/
+        let player;
+        let isPlaying = false;
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '0',
+                width: '0',
+                videoId: YOUTUBE_VIDEO_ID,
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 0,
+                    'loop': 1,
+                    'playlist': YOUTUBE_VIDEO_ID
+                }
+            });
+        }
+
+        const musicBtn = document.getElementById('musicToggle');
+        musicBtn.addEventListener('click', () => {
+            if (!player) return;
+            if (isPlaying) {
+                player.pauseVideo();
+                musicBtn.innerHTML = "🎵 Müziği Başlat";
+                isPlaying = false;
+            } else {
+                player.playVideo();
+                musicBtn.innerHTML = "⏸️ Müziği Durdur";
+                isPlaying = true;
+            }
+        });
+
+        /***********************************************************
+         * 3. YAPBOZ (PUZZLE) OYUNU
+         ***********************************************************/
+        const board = document.getElementById('puzzle-board');
+        let pieces = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+        let currentOrder = [];
+        let selectedIndex = null;
+
+        function initPuzzle() {
+            do {
+                currentOrder = [...pieces].sort(() => Math.random() - 0.5);
+            } while (isSolved(currentOrder));
+
+            renderBoard();
+        }
+
+        function renderBoard() {
+            board.innerHTML = '';
+            currentOrder.forEach((piecePos, index) => {
+                const div = document.createElement('div');
+                div.className = 'puzzle-piece';
+                
+                const row = Math.floor(piecePos / 3);
+                const col = piecePos % 3;
+                
+                div.style.backgroundImage = `url('${RESIM_URL}')`;
+                div.style.backgroundPosition = `-${col * 100}px -${row * 100}px`;
+
+                if (selectedIndex === index) {
+                    div.classList.add('selected');
+                }
+
+                div.addEventListener('click', () => handlePieceClick(index));
+                board.appendChild(div);
+            });
+        }
+
+        function handlePieceClick(index) {
+            if (selectedIndex === null) {
+                selectedIndex = index;
+            } else {
+                const temp = currentOrder[selectedIndex];
+                currentOrder[selectedIndex] = currentOrder[index];
+                currentOrder[index] = temp;
+                selectedIndex = null;
+
+                if (isSolved(currentOrder)) {
+                    renderBoard();
+                    setTimeout(onPuzzleComplete, 300);
+                    return;
+                }
+            }
+            renderBoard();
+        }
+
+        function isSolved(arr) {
+            return arr.every((val, index) => val === index);
+        }
+
+        function onPuzzleComplete() {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+
+            document.getElementById('winModal').classList.add('active');
+        }
+
+        /***********************************************************
+         * 4. UÇAN BALONLAR VE SÖZLER
+         ***********************************************************/
+        const winModal = document.getElementById('winModal');
+        const startBtn = document.getElementById('startBalloonsBtn');
+        const balloonContainer = document.getElementById('balloon-container');
+        const toastMsg = document.getElementById('toastMsg');
+
+        startBtn.addEventListener('click', () => {
+            winModal.classList.remove('active');
+            startBalloons();
+        });
+
+        function startBalloons() {
+            setInterval(createBalloon, 800);
+        }
+
+        const balloonColors = ['#ff4b2b', '#ff416c', '#fbcfe8', '#fda4af', '#e11d48', '#c084fc'];
+
+        function createBalloon() {
+            const balloon = document.createElement('div');
+            balloon.className = 'balloon';
+
+            const color = balloonColors[Math.floor(Math.random() * balloonColors.length)];
+            const left = Math.random() * 85 + 5;
+            const duration = Math.random() * 4 + 6;
+
+            balloon.style.background = color;
+            balloon.style.left = left + 'vw';
+            balloon.style.animationDuration = duration + 's';
+
+            balloon.addEventListener('click', (e) => {
+                showRandomMessage();
+                balloon.remove();
+            });
+
+            balloonContainer.appendChild(balloon);
+
+            setTimeout(() => {
+                if (balloon.parentNode) {
+                    balloon.remove();
+                }
+            }, duration * 1000);
+        }
+
+        let toastTimeout;
+        function showRandomMessage() {
+            const randomText = SOZLER[Math.floor(Math.random() * SOZLER.length)];
+            toastMsg.textContent = randomText;
+            toastMsg.classList.add('show');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toastMsg.classList.remove('show');
+            }, 2500);
+        }
+
+        window.onload = initPuzzle;
+    </script>
+</body>
+</html>
