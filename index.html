@@ -34,12 +34,14 @@
             font-size: 3rem;
             color: #e11d48;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             text-align: center;
         }
 
         p.sub-title {
-            font-size: 1.1rem;
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.8rem;
+            font-weight: bold;
             color: #be123c;
             margin-bottom: 25px;
             text-align: center;
@@ -127,67 +129,31 @@
             transform: scale(0.95);
         }
 
-        /* Bana Tıkla Ekranı (Modal) */
-        .modal {
-            display: none;
+        /* Yapboz Tamamlanınca Ekrana Çıkan 'Burak & Alya' Yazısı */
+        .love-title-popup {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-
-        .modal.active {
-            display: flex;
-            opacity: 1;
-        }
-
-        .modal-content {
-            background: #ffffff;
-            padding: 40px;
-            border-radius: 25px;
-            text-align: center;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-            animation: popup 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            max-width: 80%;
-        }
-
-        @keyframes popup {
-            from { transform: scale(0.5); }
-            to { transform: scale(1); }
-        }
-
-        .click-btn {
-            background: linear-gradient(45deg, #ff4b2b, #ff416c);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.5rem;
+            top: 15%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
             font-family: 'Dancing Script', cursive;
+            font-size: 3.5rem;
+            color: #e11d48;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 40px;
             border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 10px 20px rgba(255, 65, 108, 0.4);
-            margin-top: 20px;
-            transition: all 0.3s ease;
-            animation: pulse 1.5s infinite;
+            box-shadow: 0 15px 35px rgba(225, 29, 72, 0.3);
+            border: 3px solid #fda4af;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+            white-space: nowrap;
         }
 
-        .click-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 15px 25px rgba(255, 65, 108, 0.6);
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        .love-title-popup.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
         }
 
         /* Balon Sahnesi */
@@ -242,7 +208,7 @@
         /* Mesaj Kutusu */
         .toast-message {
             position: fixed;
-            top: 20%;
+            top: 25%;
             left: 50%;
             transform: translate(-50%, -50%) scale(0.8);
             background: rgba(255, 255, 255, 0.95);
@@ -278,20 +244,12 @@
     <!-- Yapboz Alanı -->
     <div class="game-container">
         <h1>Alya & Burak</h1>
-        <p class="sub-title">Fotoğrafımızı tamamlamak için parçalara tıkla!</p>
+        <p class="sub-title">Prensesimmm ❤️</p>
         <div id="puzzle-board"></div>
     </div>
 
-    <!-- Yapboz Bittiğinde Açılan Modal -->
-    <div class="modal" id="winModal">
-        <div class="modal-content">
-            <h2 style="font-family: 'Dancing Script', cursive; font-size: 2.5rem; color: #e11d48; margin-bottom: 10px;">
-                Harika İş Çıkardın Sevgilim! ❤️
-            </h2>
-            <p style="color: #666; font-size: 1rem;">Seni bekleyen sürpriz için aşağıdaki butona tıkla...</p>
-            <button class="click-btn" id="startBalloonsBtn">Bana Tıkla ❤️</button>
-        </div>
-    </div>
+    <!-- Yapboz Tamamlanınca Çıkan Başlık -->
+    <div class="love-title-popup" id="lovePopup">Burak & Alya ❤️</div>
 
     <!-- Uçan Balonlar Container -->
     <div id="balloon-container"></div>
@@ -306,13 +264,9 @@
         /***********************************************************
          * 1. AYARLAR
          ***********************************************************/
-        // Görsel adı 'ayla.png' olarak ayarlandı
         const RESIM_URL = "ayla.png"; 
-        
-        // YouTube video ID'si
         const YOUTUBE_VIDEO_ID = "nfQEVrwJ-U0"; 
 
-        // Balonlara tıklandığında çıkacak sözler
         const SOZLER = [
             "Burak seni çok seviyor! ❤️",
             "İyi ki hayatımdasın Alya'm! ✨",
@@ -346,6 +300,18 @@
 
         const musicBtn = document.getElementById('musicToggle');
         musicBtn.addEventListener('click', () => {
+            toggleMusic();
+        });
+
+        function playMusicAuto() {
+            if (player && !isPlaying) {
+                player.playVideo();
+                musicBtn.innerHTML = "⏸️ Müziği Durdur";
+                isPlaying = true;
+            }
+        }
+
+        function toggleMusic() {
             if (!player) return;
             if (isPlaying) {
                 player.pauseVideo();
@@ -356,7 +322,7 @@
                 musicBtn.innerHTML = "⏸️ Müziği Durdur";
                 isPlaying = true;
             }
-        });
+        }
 
         /***********************************************************
          * 3. YAPBOZ (PUZZLE) OYUNU
@@ -418,30 +384,31 @@
         }
 
         function onPuzzleComplete() {
+            // 1. Konfeti Patlat
             confetti({
-                particleCount: 100,
-                spread: 70,
+                particleCount: 150,
+                spread: 80,
                 origin: { y: 0.6 }
             });
 
-            document.getElementById('winModal').classList.add('active');
+            // 2. 'Burak & Alya' başlığını ekrana getir
+            document.getElementById('lovePopup').classList.add('show');
+
+            // 3. Şarkıyı otomatik olarak başlat
+            playMusicAuto();
+
+            // 4. Balonları süzülmeye başlat
+            startBalloons();
         }
 
         /***********************************************************
          * 4. UÇAN BALONLAR VE SÖZLER
          ***********************************************************/
-        const winModal = document.getElementById('winModal');
-        const startBtn = document.getElementById('startBalloonsBtn');
         const balloonContainer = document.getElementById('balloon-container');
         const toastMsg = document.getElementById('toastMsg');
 
-        startBtn.addEventListener('click', () => {
-            winModal.classList.remove('active');
-            startBalloons();
-        });
-
         function startBalloons() {
-            setInterval(createBalloon, 800);
+            setInterval(createBalloon, 700);
         }
 
         const balloonColors = ['#ff4b2b', '#ff416c', '#fbcfe8', '#fda4af', '#e11d48', '#c084fc'];
@@ -452,7 +419,7 @@
 
             const color = balloonColors[Math.floor(Math.random() * balloonColors.length)];
             const left = Math.random() * 85 + 5;
-            const duration = Math.random() * 4 + 6;
+            const duration = Math.random() * 4 + 5;
 
             balloon.style.background = color;
             balloon.style.left = left + 'vw';
